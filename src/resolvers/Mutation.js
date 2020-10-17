@@ -79,11 +79,22 @@ async function vote(parent, args, context) {
   const vote = await context.prisma.vote.findOne({
     where: {
       linkId_userId: {
-        linkId: Number(args.linkId),
+        linkId: Number(linkId),
         userId: userId
       }
     }
   });
+  if (vote) {
+    throw new Error('Already voted for link');
+  }
+  const newVote = context.prisma.vote.create({
+    data: {
+      user: { connect: { id: userId } },
+      link: { connect: { id: Number(args.linkId) } },
+    }
+  });
+  context.pubsub.publish('NEW_VOTE', newVote);
+  return newVote;
 }
 
 module.exports = {
@@ -92,4 +103,5 @@ module.exports = {
   createLink,
   updateLink,
   deleteLink,
+  vote,
 };

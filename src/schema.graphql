@@ -39,6 +39,6 @@ type User {
 
 type Vote {
   id: ID!
-  User: User!
-  Link: Link!
+  user: User!
+  link: Link!
 }

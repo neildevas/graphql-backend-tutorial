@@ -7,6 +7,7 @@ const Mutation = require('./resolvers/Mutation');
 const User = require('./resolvers/User');
 const linkResolvers = require('./resolvers/link');
 const Subscription = require('./resolvers/Subscription');
+const Vote = require('./resolvers/Vote');
 
 const prisma = new PrismaClient();
 const pubsub = new PubSub();
@@ -17,6 +18,7 @@ const resolvers = {
   Link: linkResolvers,
   User,
   Subscription,
+  Vote,
 };
 
 const server = new GraphQLServer({
