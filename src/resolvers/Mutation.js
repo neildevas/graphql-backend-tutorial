@@ -30,14 +30,16 @@ async function login(parent, args, context) {
 
 async function createLink(parent, args, context) {
   const userId = getUserId(context);
-  return context.prisma.link.create({
+  const newLink = context.prisma.link.create({
     data: {
       ...args,
       postedBy: {
         connect: { id: userId },
       }
     }
-  })
+  });
+  context.pubsub.publish('NEW_LINK', newLink);
+  return newLink
 }
 
 async function updateLink(parent, args, context) {
@@ -69,6 +71,19 @@ async function deleteLink(parent, args, context) {
       id: parsedLinkId,
     }
   })
+}
+
+async function vote(parent, args, context) {
+  const { linkId } = args;
+  const userId = getUserId(context);
+  const vote = await context.prisma.vote.findOne({
+    where: {
+      linkId_userId: {
+        linkId: Number(args.linkId),
+        userId: userId
+      }
+    }
+  });
 }
 
 module.exports = {
