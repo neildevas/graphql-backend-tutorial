@@ -1,64 +1,17 @@
 const { GraphQLServer } = require('graphql-yoga');
 const { PrismaClient } = require('@prisma/client');
+const Query = require('./resolvers/Query');
+const Mutation = require('./resolvers/Mutation');
+const User = require('./resolvers/User');
+const linkResolvers = require('./resolvers/link');
 
 const prisma = new PrismaClient();
 
-const createPost = async (parent, args, context) => {
-  const { description, url } = args;
-  return prisma.link.create({
-    data: {
-      description,
-      url,
-    }
-  })
-};
-
-const findLinkById = async (parent, args, context) => {
-  const { id } = args;
-  return prisma.link.findOne({
-    where: {
-      id: parseInt(id, 10),
-    }
-  })
-};
-
-const updateLink = (parent, args, context) => {
-  const { linkId, description, url } = args;
-  console.log('LINK ID', linkId);
-  console.log(typeof linkId);
-  const updateData = {};
-  if (description) {
-    updateData.description = description;
-  }
-  if (url) {
-    updateData.url = url;
-  }
-  return prisma.link.update({
-    where: { id: parseInt(linkId) },
-    data: updateData,
-  });
-};
-
-const deleteLink = async (parent, args, context) => {
-  const { linkId } = args;
-  return prisma.link.delete({
-    where: {
-      id: parseInt(linkId)
-    }
-  });
-};
-
 const resolvers = { // functions that get data
-  Query: {
-    info: () => `Api for hackernews`,
-    feed: async (parent, args, context) => prisma.link.findMany(),
-    link: findLinkById,
-  },
-  Mutation: {
-    createPost,
-    updateLink,
-    deleteLink
-  },
+  Query,
+  Mutation,
+  Link: linkResolvers,
+  User,
 };
 
 const server = new GraphQLServer({

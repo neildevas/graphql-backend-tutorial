@@ -28,7 +28,7 @@ async function login(parent, args, context) {
   }
 }
 
-async function createPost(parent, args, context) {
+async function createLink(parent, args, context) {
   const userId = getUserId(context);
   return context.prisma.link.create({
     data: {
@@ -40,7 +40,41 @@ async function createPost(parent, args, context) {
   })
 }
 
+async function updateLink(parent, args, context) {
+  const { linkId, description, url } = args;
+  const parsedLinkId = parseInt(linkId);
+  const userId = getUserId(context);
+  const link = context.prisma.link.findFirst({
+    where: {
+      AND: [{ postedById: userId }, { id: parsedLinkId }]
+    }
+  });
+  if (!link) {
+    throw new Error('Could not find link');
+  }
+  return context.prisma.link.update({
+    data: { description, url },
+    where: {
+      id: parsedLinkId
+    }
+  })
+}
+
+async function deleteLink(parent, args, context) {
+  const { linkId } = args;
+  const parsedLinkId = parseInt(linkId);
+  getUserId(context);
+  return context.prisma.link.delete({
+    where: {
+      id: parsedLinkId,
+    }
+  })
+}
+
 module.exports = {
   signup,
   login,
+  createLink,
+  updateLink,
+  deleteLink,
 };

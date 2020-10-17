@@ -2,12 +2,12 @@ type Query {
   info: String!
   feed: [Link!]!
   link(id: ID!): Link
-  signup(name: String!, email: String!, password: String!): AuthPayload
-  login(emai: String!, password: String!): AuthPayload
 }
 
 type Mutation {
-  createPost(description: String!, url: String!): Link
+  signup(name: String!, email: String!, password: String!): AuthPayload
+  login(emai: String!, password: String!): AuthPayload
+  createLink(description: String!, url: String!): Link
   updateLink(linkId: ID!, url: String, description: String): Link
   deleteLink(linkId: ID!): Link
 }
