@@ -1,78 +1,57 @@
 const { GraphQLServer } = require('graphql-yoga');
+const { PrismaClient } = require('@prisma/client');
 
-// Schema
-// Written in Schema Definition Language (SDL)
-// SDL allows you to define types
-// Three root types: Query, Mutation, Subscription
-// Each root type can take fields (called root fields) which will define the available API operations
+const prisma = new PrismaClient();
 
-let links = [{
-  id: 'link-0',
-  url: 'www.howtographql.com',
-  description: 'Fullstack tutorial for GraphQL',
-  is_deleted: false,
-}, {
-  id: 'foo',
-  description: 'bar',
-  url: 'baz.com',
-  is_deleted: false,
-}];
-
-let getIdCount = () => links.length;
-const createPost = (parent, args) => {
-  console.log('PARENT', parent);
-  console.log('ARGS', args);
-  const newPost = {
-    id: `id-${getIdCount()}`,
-    description: args.description,
-    url: args.url,
-  };
-  links.push(newPost);
-  return newPost;
+const createPost = async (parent, args, context) => {
+  const { description, url } = args;
+  return prisma.link.create({
+    data: {
+      description,
+      url,
+    }
+  })
 };
 
-const findLink = (id) => {
-  const link = links.find(link => link.id === id);
-  if (!link) {
-    throw new Error('Could not find link');
-  }
-  return link
-};
-
-const findLinkById = (parent, args) => {
+const findLinkById = async (parent, args, context) => {
   const { id } = args;
-  return links.find(link => link.id === id);
+  return prisma.link.findOne({
+    where: {
+      id: parseInt(id, 10),
+    }
+  })
 };
 
-const updateLink = (parent, args) => {
+const updateLink = (parent, args, context) => {
   const { linkId, description, url } = args;
-  const link = findLink(linkId);
+  console.log('LINK ID', linkId);
+  console.log(typeof linkId);
+  const updateData = {};
   if (description) {
-    link.description = description;
+    updateData.description = description;
   }
   if (url) {
-    link.url = url;
+    updateData.url = url;
   }
-  return link
+  return prisma.link.update({
+    where: { id: parseInt(linkId) },
+    data: updateData,
+  });
 };
 
-const deleteLink = (parent, args) => {
+const deleteLink = async (parent, args, context) => {
   const { linkId } = args;
-  const linkToDelete = findLink(linkId);
-  linkToDelete.is_deleted = true;
-  links = links.map(link => {
-    if (link.id === linkToDelete.id) {
-      return linkToDelete;
+  return prisma.link.delete({
+    where: {
+      id: parseInt(linkId)
     }
-    return link;
   });
-  return linkToDelete
 };
 
 const resolvers = { // functions that get data
   Query: {
     info: () => `Api for hackernews`,
-    feed: () => links,
+    feed: async (parent, args, context) => prisma.link.findMany(),
     link: findLinkById,
   },
   Mutation: {
@@ -85,5 +64,8 @@ const resolvers = { // functions that get data
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',
   resolvers,
+  context: {
+    prisma
+  }
 });
 server.start(() => console.log('Server is running on port 4000'));
