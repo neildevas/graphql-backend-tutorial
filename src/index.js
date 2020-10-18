@@ -30,4 +30,5 @@ const server = new GraphQLServer({
     pubsub,
   })
 });
+
 server.start(() => console.log('Server is running on port 4000'));
